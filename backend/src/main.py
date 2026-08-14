@@ -83,9 +83,14 @@ def get_gold_standard_urls(domain: str):
 # --- POST /evaluate ---
 @app.post("/evaluate", response_model=EvaluateResponse)
 def evaluate(request: EvaluateRequest):
+    metrics=token_level_eval(
+        parsed_text=request.parsed_text,
+        gold_text=request.gold_text
+    )
     # TODO: qui andrà la vera implementazione token_level_eval (Punto 7)
-    fake_metrics = TokenLevelEval(precision=0.0, recall=0.0, f1=0.0)
-    return EvaluateResponse(token_level_eval=fake_metrics)
+    return EvaluateResponse(
+        token_level_eval=TokenLevelEval(**metrics)
+    )
 
 
 # --- POST /evaluate_judge ---
