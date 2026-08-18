@@ -1,6 +1,0 @@
-DOMAINS = [
-    "it.wikipedia.org",
-    "wise.com",
-    "people.com",
-    "limesonline.com"
-]
