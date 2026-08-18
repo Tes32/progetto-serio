@@ -87,7 +87,6 @@ def evaluate(request: EvaluateRequest):
         parsed_text=request.parsed_text,
         gold_text=request.gold_text
     )
-    # TODO: qui andrà la vera implementazione token_level_eval (Punto 7)
     return EvaluateResponse(
         token_level_eval=TokenLevelEval(**metrics)
     )
