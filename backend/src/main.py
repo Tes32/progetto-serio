@@ -1,7 +1,6 @@
 import sys
 import asyncio
 
-
 from evaluation import token_level_eval
 from fastapi import FastAPI, HTTPException
 from parsers.factory import get_parser_for_url
@@ -46,6 +45,8 @@ def get_status():
 # --- POST /parse ---
 @app.post("/parse", response_model=ParseResponse)
 async def parse_url(request: ParseRequest):
+    print("EVENT LOOP:", type(asyncio.get_running_loop()).__name__)
+
     parser = get_parser_for_url(request.url)
 
     if parser is None:
@@ -54,9 +55,13 @@ async def parse_url(request: ParseRequest):
     try:
         result = await parser.parse(request.url)
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"URL irraggiungibile: {str(e)}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"{type(e).__name__}: {repr(e)}"
+        )
 
     return ParseResponse(**result)
+
 
 # --- GET /gold_standard ---
 @app.get("/gold_standard", response_model=GoldStandardResponse)
@@ -76,6 +81,7 @@ def get_gold_standard(url: str):
 def get_gold_standard_urls(domain: str):
     if domain not in DOMAINS:
         raise HTTPException(status_code=400, detail="Dominio non supportato")
+
     # TODO: qui andrà la vera lettura dal database (Punto 6)
     return GoldStandardUrlsResponse(gold_standard_urls=[])
 
@@ -83,10 +89,11 @@ def get_gold_standard_urls(domain: str):
 # --- POST /evaluate ---
 @app.post("/evaluate", response_model=EvaluateResponse)
 def evaluate(request: EvaluateRequest):
-    metrics=token_level_eval(
+    metrics = token_level_eval(
         parsed_text=request.parsed_text,
         gold_text=request.gold_text
     )
+
     return EvaluateResponse(
         token_level_eval=TokenLevelEval(**metrics)
     )
@@ -136,9 +143,18 @@ def delete_gold_standard(url: str):
 def full_gs_eval(domain: str):
     if domain not in DOMAINS:
         raise HTTPException(status_code=400, detail="Dominio non supportato")
+
     # TODO: qui andrà la vera aggregazione delle valutazioni (Punto 6-7)
-    fake_metrics = TokenLevelEval(precision=0.0, recall=0.0, f1=0.0)
-    return FullGsEvalResponse(token_level_eval=fake_metrics, judge_score=0.0)
+    fake_metrics = TokenLevelEval(
+        precision=0.0,
+        recall=0.0,
+        f1=0.0
+    )
+
+    return FullGsEvalResponse(
+        token_level_eval=fake_metrics,
+        judge_score=0.0
+    )
 
 
 # --- GET /db_stats ---
