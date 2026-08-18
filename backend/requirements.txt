@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+pydantic
+crawl4ai
+mistune
+beautifulsoup4
